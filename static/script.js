@@ -3,24 +3,58 @@ document.addEventListener('DOMContentLoaded', () => {
     const userInput = document.getElementById('user-input');
     const sendButton = document.getElementById('send-button');
 
+    // Updated appendMessage function for the new HTML structure and basic markdown
     function appendMessage(sender, message) {
-        const messageElement = document.createElement('div');
-        messageElement.classList.add('message');
-        messageElement.classList.add(`${sender}-message`);
-        messageElement.textContent = message;
-        chatMessages.appendChild(messageElement);
-        chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to bottom
+        const messageWrapper = document.createElement('div');
+        messageWrapper.classList.add('message-wrapper');
+
+        const messageIcon = document.createElement('div');
+        messageIcon.classList.add('message-icon');
+
+        const messageContent = document.createElement('div');
+        messageContent.classList.add('message');
+
+        // Basic markdown for bold, italic, and new lines
+        // For more robust markdown (like code blocks), you'd need a dedicated library (e.g., marked.js)
+        let formattedMessage = message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // Bold **text**
+                                     .replace(/\*(.*?)\*/g, '<em>$1</em>'); // Italic *text*
+        formattedMessage = formattedMessage.replace(/\n/g, '<br>'); // Convert newlines to HTML line breaks
+
+
+        messageContent.innerHTML = formattedMessage; // Use innerHTML to render formatted text
+
+
+        if (sender === 'user') {
+            messageWrapper.classList.add('user-wrapper');
+            messageIcon.classList.add('user-icon');
+            messageIcon.textContent = 'You'; // User icon/initial
+            // For user messages, content comes first, then icon for right-aligned flow
+            messageWrapper.appendChild(messageContent);
+            messageWrapper.appendChild(messageIcon);
+        } else { // bot
+            messageWrapper.classList.add('bot-wrapper');
+            messageIcon.classList.add('bot-icon');
+            messageIcon.textContent = 'AI'; // Bot icon/initial
+            // For bot messages, icon comes first, then content
+            messageWrapper.appendChild(messageIcon);
+            messageWrapper.appendChild(messageContent);
+        }
+
+        chatMessages.appendChild(messageWrapper);
+        chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll to bottom
     }
 
+    // Your existing showTypingIndicator function (modified slightly to match new class)
     function showTypingIndicator() {
         const typingDiv = document.createElement('div');
-        typingDiv.id = 'typing-indicator';
-        typingDiv.classList.add('typing-indicator');
+        typingDiv.id = 'typing-indicator'; // Keep the ID for easy removal
+        typingDiv.classList.add('loading-indicator'); // Using the class from new CSS
         typingDiv.textContent = 'Assistant is typing...';
         chatMessages.appendChild(typingDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
     }
 
+    // Your existing removeTypingIndicator function
     function removeTypingIndicator() {
         const typingDiv = document.getElementById('typing-indicator');
         if (typingDiv) {
@@ -32,9 +66,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const message = userInput.value.trim();
         if (message === '') return;
 
-        appendMessage('user', message);
-        userInput.value = '';
-        showTypingIndicator();
+        appendMessage('user', message); // Display user's message immediately
+        userInput.value = ''; // Clear input field
+        showTypingIndicator(); // Show typing indicator
 
         try {
             const response = await fetch('/chat', {
@@ -46,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
 
             const data = await response.json();
-            removeTypingIndicator();
+            removeTypingIndicator(); // Remove typing indicator after response
 
             if (data.response) {
                 appendMessage('bot', data.response);
@@ -55,8 +89,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (error) {
             console.error('Error sending message:', error);
-            removeTypingIndicator();
+            removeTypingIndicator(); // Remove typing indicator on error
             appendMessage('bot', 'Sorry, I am having trouble connecting right now. Please try again later.');
+        } finally {
+            chatMessages.scrollTop = chatMessages.scrollHeight; // Scroll to bottom in case of error or before next message
         }
     }
 
