@@ -3,16 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fabric Assistant Chat</title>
+    <title>VSS Fabric Assistant Chat</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <div class="chat-container">
         <div class="chat-header">
-            <h3>Fabric Assistant</h3>
+            <h3>VSS Fabric Assistant</h3>
         </div>
         <div class="chat-messages" id="chat-messages">
-            <div class="message bot-message">Hello! I'm your Fabric Assistant. How can I help you today?</div>
+            <div class="message-wrapper bot-wrapper">
+                <div class="message-icon bot-icon">AI</div>
+                <div class="message bot">Hello! I'm your Fabric Assistant. How can I help you today?</div>
+            </div>
         </div>
         <div class="chat-input">
             <input type="text" id="user-input" placeholder="Ask me about fabrics..." autocomplete="off">
